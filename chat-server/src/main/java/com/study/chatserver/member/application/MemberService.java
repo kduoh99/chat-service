@@ -38,7 +38,7 @@ public class MemberService {
 			.name(memberSaveReqDto.name())
 			.email(memberSaveReqDto.email())
 			.password(passwordEncoder.encode(memberSaveReqDto.password()))
-			.role(Role.ROLE_USER)
+			.role(Role.USER)
 			.build());
 
 		return member.getId();
@@ -52,8 +52,7 @@ public class MemberService {
 			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 
-		TokenDto tokenDto = tokenProvider.generateToken(String.valueOf(member.getId()),
-			String.valueOf(member.getRole()));
+		TokenDto tokenDto = tokenProvider.generateToken(String.valueOf(member.getId()), String.valueOf(member.getRole()));
 
 		return MemberLoginResDto.of(member.getId(), tokenDto.accessToken());
 	}

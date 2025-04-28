@@ -17,6 +17,11 @@ spring:
         format_sql: true
     open-in-view: false
 
+logging:
+  level:
+    org.hibernate.sql: debug
+    org.hibernate.type: trace
+
 jwt:
   secret: ${jwt.secret}
   expire-time:
