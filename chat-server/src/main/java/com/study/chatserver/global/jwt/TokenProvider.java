@@ -46,17 +46,17 @@ public class TokenProvider {
 		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
 	}
 
-	public TokenDto generateToken(String memberId, String role) {
-		String accessToken = generateAccessToken(memberId, role);
+	public TokenDto generateToken(String email, String role) {
+		String accessToken = generateAccessToken(email, role);
 
 		return TokenDto.from(accessToken);
 	}
 
-	private String generateAccessToken(String memberId, String role) {
+	private String generateAccessToken(String email, String role) {
 		Date now = new Date();
 
 		return Jwts.builder()
-			.setSubject(memberId)
+			.setSubject(email)
 			.claim("role", role)
 			.setIssuedAt(now)
 			.setExpiration(new Date(now.getTime() + accessTokenExpireTime * 60 * 1000L))
@@ -74,17 +74,15 @@ public class TokenProvider {
 			return true;
 		} catch (ExpiredJwtException e) {
 			log.error("JWT expired");
-			throw new IllegalArgumentException("JWT expired");
 		} catch (SignatureException e) {
 			log.error("Invalid JWT signature");
-			throw new IllegalArgumentException("Invalid JWT signature");
 		} catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
 			log.error("Invalid JWT format");
-			throw new IllegalArgumentException("Invalid JWT format");
 		} catch (Exception e) {
 			log.error("JWT validation error", e);
-			throw new RuntimeException("JWT validation error");
 		}
+
+		return false;
 	}
 
 	public Authentication getAuthentication(String token) {

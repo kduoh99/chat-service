@@ -52,7 +52,7 @@ public class MemberService {
 			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 
-		TokenDto tokenDto = tokenProvider.generateToken(String.valueOf(member.getId()), String.valueOf(member.getRole()));
+		TokenDto tokenDto = tokenProvider.generateToken(member.getEmail(), String.valueOf(member.getRole()));
 
 		return MemberLoginResDto.of(member.getId(), tokenDto.accessToken());
 	}
