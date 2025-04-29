@@ -1,4 +1,11 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import vutify from './plugins/vuetify';
+import router from '@/router/index.js';
+// import axios from 'axios'
 
-createApp(App).mount('#app')
+const app = createApp(App);
+
+app.use(vutify);
+app.use(router);
+app.mount('#app');
