@@ -3,12 +3,13 @@
     <v-row justify="center">
       <v-col cols="12" sm="4" md="6">
         <v-card>
-          <v-card-title class="text-h5 text-center">로그인</v-card-title>
+          <v-card-title class="text-h5 text-center">회원가입</v-card-title>
           <v-card-text>
-            <v-form @submit.prevent="doLogin">
+            <v-form @submit.prevent="signup">
+              <v-text-field label="이름" v-model="name" required></v-text-field>
               <v-text-field label="이메일" v-model="email" type="email" required></v-text-field>
               <v-text-field label="비밀번호" v-model="password" type="password" required></v-text-field>
-              <v-btn type="submit" color="primary" block>로그인</v-btn>
+              <v-btn type="submit" color="primary" block>회원가입</v-btn>
             </v-form>
           </v-card-text>
         </v-card>
@@ -23,21 +24,20 @@
   export default {
     data() {
       return {
+        name: '',
         email: '',
         password: '',
       };
     },
     methods: {
-      async doLogin() {
-        const loginData = {
+      async signup() {
+        const data = {
+          name: this.name,
           email: this.email,
           password: this.password,
         };
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/member/login`, loginData);
-        console.log(response);
-        const accessToken = response.data.accessToken;
-        localStorage.setItem('accessToken', accessToken);
-        window.location.href = '/';
+        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/member/save`, data);
+        this.$router.push('/');
       },
     },
   };
