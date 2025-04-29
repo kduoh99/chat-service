@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import vutify from './plugins/vuetify';
 import router from '@/router/index.js';
-// import axios from 'axios'
+// import axios from 'axios';
 
 const app = createApp(App);
 
