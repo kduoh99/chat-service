@@ -1,23 +1,23 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import MemberSignup from '@/views/MemberSignup.vue';
-import MemberLogin from '@/views/MemberLogin.vue';
-import MemberList from '@/views/MemberList.vue';
+import SignupView from '@/views/SignupView.vue';
+import LoginView from '@/views/LoginView.vue';
+import MembersView from '@/views/MembersView.vue';
 
 const routes = [
   {
     path: '/signup',
-    name: 'MemberSignup',
-    component: MemberSignup,
+    name: 'Signup',
+    component: SignupView,
   },
   {
     path: '/login',
-    name: 'MemberLogin',
-    component: MemberLogin,
+    name: 'Login',
+    component: LoginView,
   },
   {
     path: '/members',
-    name: 'MemberList',
-    component: MemberList,
+    name: 'Members',
+    component: MembersView,
   },
 ];
 

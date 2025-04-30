@@ -15,7 +15,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="member in memberList" :key="member.memberId">
+                <tr v-for="member in members" :key="member.memberId">
                   <td>{{ member.memberId }}</td>
                   <td>{{ member.name }}</td>
                   <td>{{ member.email }}</td>
@@ -38,12 +38,12 @@
   export default {
     data() {
       return {
-        memberList: [],
+        members: [],
       };
     },
     async created() {
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/member/list`);
-      this.memberList = response.data;
+      this.members = response.data;
     },
   };
 </script>
