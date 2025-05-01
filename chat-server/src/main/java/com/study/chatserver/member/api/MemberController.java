@@ -16,15 +16,14 @@ import com.study.chatserver.member.api.dto.response.MemberInfoResDto;
 import com.study.chatserver.member.api.dto.response.MemberLoginResDto;
 import com.study.chatserver.member.application.MemberService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/member")
 public class MemberController {
 
 	private final MemberService memberService;
-
-	public MemberController(MemberService memberService) {
-		this.memberService = memberService;
-	}
 
 	@PostMapping("/save")
 	public ResponseEntity<Long> save(@RequestBody MemberSaveReqDto memberSaveReqDto) {
