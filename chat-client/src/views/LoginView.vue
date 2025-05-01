@@ -19,6 +19,7 @@
 
 <script>
   import axios from 'axios';
+  import { jwtDecode } from 'jwt-decode';
 
   export default {
     data() {
@@ -36,7 +37,11 @@
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/member/login`, data);
         console.log(response);
         const accessToken = response.data.accessToken;
+        const email = jwtDecode(accessToken).sub;
+        const role = jwtDecode(accessToken).role;
         localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('email', email);
+        localStorage.setItem('role', role);
         window.location.href = '/';
       },
     },
