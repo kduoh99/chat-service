@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
 import com.study.chatserver.chat.api.dto.request.MessageReqDto;
+import com.study.chatserver.chat.application.ChatService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class StompController {
 
 	private final SimpMessageSendingOperations messageTemplate;
+	private final ChatService chatService;
 
 	// 방법 1. MessageMapping + SendTo (정적 브로커 경로 설정)
 	// @MessageMapping("/{roomId}")	// 클라이언트가 /publish/{roomId}로 메시지 발행
@@ -29,6 +31,7 @@ public class StompController {
 	@MessageMapping("/{roomId}")
 	public void sendMessage(@DestinationVariable Long roomId, MessageReqDto messageReqDto) {
 		log.info("message: {}", messageReqDto.message());
+		chatService.saveMessage(roomId, messageReqDto);
 		messageTemplate.convertAndSend("/topic/" + roomId, messageReqDto);
 	}
 }
