@@ -23,7 +23,7 @@ public class StompHandler implements ChannelInterceptor {
 		final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
 		if (StompCommand.CONNECT == accessor.getCommand()) {
-			log.info("CONNECT - Token validation started");
+			log.info("Connect - Token validation started");
 			String token = accessor.getFirstNativeHeader("Authorization").substring(7);
 
 			Jwts.parserBuilder()
@@ -32,7 +32,7 @@ public class StompHandler implements ChannelInterceptor {
 				.parseClaimsJws(token)
 				.getBody();
 
-			log.info("CONNECT - Token validation completed");
+			log.info("Connect - Token validation completed");
 		}
 
 		return message;
