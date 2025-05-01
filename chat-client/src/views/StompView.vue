@@ -28,6 +28,7 @@
         messages: [],
         newMessage: '',
         stompClient: null,
+        accessToken: '',
       };
     },
     created() {
@@ -40,13 +41,18 @@
       connect() {
         const sockJs = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/connect`);
         this.stompClient = Stomp.over(sockJs);
-
-        this.stompClient.connect({}, () => {
-          this.stompClient.subscribe(`/topic/1`, (message) => {
-            this.messages.push(message.body);
-            this.scrollToBottom();
-          });
-        });
+        this.accessToken = localStorage.getItem('accessToken');
+        this.stompClient.connect(
+          {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+          () => {
+            this.stompClient.subscribe(`/topic/1`, (message) => {
+              this.messages.push(message.body);
+              this.scrollToBottom();
+            });
+          },
+        );
       },
       send() {
         if (this.newMessage.trim() === '') return;

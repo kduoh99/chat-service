@@ -1,14 +1,22 @@
 package com.study.chatserver.global.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.study.chatserver.global.websocket.handler.StompHandler;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class StompConfig implements WebSocketMessageBrokerConfigurer {
+
+	private final StompHandler stompHandler;
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -24,5 +32,11 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
 
 		// 메시지를 구독할 prefix 설정 (ex. /topic/{roomId})
 		registry.enableSimpleBroker("/topic");
+	}
+
+	@Override
+	public void configureClientInboundChannel(ChannelRegistration registration) {
+		// CONNECT, SUBSCRIBE, DISCONNECT 등 클라이언트 요청을 인터셉트하여 토큰 검증
+		registration.interceptors(stompHandler);
 	}
 }
