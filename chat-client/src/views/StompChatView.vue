@@ -36,11 +36,13 @@
         stompClient: null,
         accessToken: '',
         sender: null,
+        roomId: null,
       };
     },
     // 컴포넌트가 생성될 때 실행됨
     created() {
       this.sender = localStorage.getItem('email');
+      this.roomId = this.$route.params.roomId;
       this.connect();
     },
     // 라우트 이동 직전 실행됨
@@ -63,7 +65,7 @@
             Authorization: `Bearer ${this.accessToken}`,
           },
           () => {
-            this.stompClient.subscribe(`/topic/1`, (message) => {
+            this.stompClient.subscribe(`/topic/${this.roomId}`, (message) => {
               const parseMessage = JSON.parse(message.body);
               this.messages.push(parseMessage);
               this.scrollToBottom();
@@ -77,7 +79,7 @@
           sender: this.sender,
           message: this.newMessage,
         };
-        this.stompClient.send(`/publish/1`, JSON.stringify(message));
+        this.stompClient.send(`/publish/${this.roomId}`, JSON.stringify(message));
         this.newMessage = '';
       },
       scrollToBottom() {
@@ -88,7 +90,7 @@
       },
       disconnect() {
         if (this.stompClient && this.stompClient.connected) {
-          this.stompClient.unsubscribe(`/topic/1`);
+          this.stompClient.unsubscribe(`/topic/${this.roomId}`);
           this.stompClient.disconnect();
         }
       },
