@@ -1,10 +1,13 @@
 package com.study.chatserver.chat.application;
 
+import java.util.List;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.study.chatserver.chat.api.dto.request.MessageReqDto;
+import com.study.chatserver.chat.api.dto.response.GroupRoomInfoResDto;
 import com.study.chatserver.chat.domain.ChatMessage;
 import com.study.chatserver.chat.domain.ChatParticipant;
 import com.study.chatserver.chat.domain.ChatRoom;
@@ -66,5 +69,11 @@ public class ChatService {
 				.build()))
 			.member(member)
 			.build());
+	}
+
+	public List<GroupRoomInfoResDto> getGroupRooms() {
+		return chatRoomRepository.findByIsGroupChat("Y").stream()
+			.map(c -> GroupRoomInfoResDto.of(c.getId(), c.getName()))
+			.toList();
 	}
 }

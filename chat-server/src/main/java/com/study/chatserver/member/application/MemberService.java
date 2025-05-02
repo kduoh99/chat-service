@@ -58,9 +58,7 @@ public class MemberService {
 	}
 
 	public List<MemberInfoResDto> findAll() {
-		List<Member> members = memberRepository.findAll();
-
-		return members.stream()
+		return memberRepository.findAll().stream()
 			.map(m -> (MemberInfoResDto.of(m.getId(), m.getName(), m.getEmail())))
 			.toList();
 	}
