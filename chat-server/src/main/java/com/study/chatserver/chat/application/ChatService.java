@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.study.chatserver.chat.api.dto.request.MessageReqDto;
+import com.study.chatserver.chat.api.dto.MessageDto;
 import com.study.chatserver.chat.api.dto.response.GroupRoomInfoResDto;
 import com.study.chatserver.chat.domain.ChatMessage;
 import com.study.chatserver.chat.domain.ChatParticipant;
@@ -35,17 +35,17 @@ public class ChatService {
 	private final MemberRepository memberRepository;
 
 	@Transactional
-	public void saveMessage(Long roomId, MessageReqDto messageReqDto) {
+	public void saveMessage(Long roomId, MessageDto messageDto) {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
 
-		Member sender = memberRepository.findByEmail(messageReqDto.sender())
+		Member sender = memberRepository.findByEmail(messageDto.sender())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
 		ChatMessage chatMessage = chatMessageRepository.save(ChatMessage.builder()
 			.chatRoom(chatRoom)
 			.member(sender)
-			.content(messageReqDto.message())
+			.content(messageDto.message())
 			.build());
 
 		chatParticipantRepository.findByChatRoom(chatRoom)
@@ -95,5 +95,30 @@ public class ChatService {
 			.chatRoom(chatRoom)
 			.member(member)
 			.build());
+	}
+
+	public List<MessageDto> getChatHistory(Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
+
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+			.orElseThrow(() -> new IllegalArgumentException("본인이 속하지 않은 채팅방입니다."));
+
+		return chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom).stream()
+			.map(m -> MessageDto.of(m.getContent(), m.getMember().getEmail()))
+			.toList();
+	}
+
+	public boolean isRoomParticipant(String email, Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
+
+		Member member = memberRepository.findByEmail(email)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
 	}
 }

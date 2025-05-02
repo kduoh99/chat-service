@@ -5,7 +5,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
-import com.study.chatserver.chat.api.dto.request.MessageReqDto;
+import com.study.chatserver.chat.api.dto.MessageDto;
 import com.study.chatserver.chat.application.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,9 @@ public class StompController {
 
 	// 방법 2. MessageMapping + SimpMessageSendingOperations (동적 브로커 경로 설정, 유연한 제어 가능)
 	@MessageMapping("/{roomId}")
-	public void sendMessage(@DestinationVariable Long roomId, MessageReqDto messageReqDto) {
-		log.info("message: {}", messageReqDto.message());
-		chatService.saveMessage(roomId, messageReqDto);
-		messageTemplate.convertAndSend("/topic/" + roomId, messageReqDto);
+	public void sendMessage(@DestinationVariable Long roomId, MessageDto messageDto) {
+		log.info("message: {}", messageDto.message());
+		chatService.saveMessage(roomId, messageDto);
+		messageTemplate.convertAndSend("/topic/" + roomId, messageDto);
 	}
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.study.chatserver.chat.api.dto.MessageDto;
 import com.study.chatserver.chat.api.dto.response.GroupRoomInfoResDto;
 import com.study.chatserver.chat.application.ChatService;
 
@@ -38,5 +39,10 @@ public class ChatController {
 	public ResponseEntity<Void> joinGroupChatRoom(@PathVariable Long roomId) {
 		chatService.joinGroupChatRoom(roomId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/history/{roomId}")
+	public ResponseEntity<List<MessageDto>> getChatHistory(@PathVariable Long roomId) {
+		return ResponseEntity.ok(chatService.getChatHistory(roomId));
 	}
 }

@@ -26,7 +26,7 @@
 <script>
   import SockJS from 'sockjs-client';
   import Stomp from 'webstomp-client';
-  // import axios from 'axios';
+  import axios from 'axios';
 
   export default {
     data() {
@@ -40,9 +40,11 @@
       };
     },
     // 컴포넌트가 생성될 때 실행됨
-    created() {
+    async created() {
       this.sender = localStorage.getItem('email');
       this.roomId = this.$route.params.roomId;
+      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${this.roomId}`);
+      this.messages = response.data;
       this.connect();
     },
     // 라우트 이동 직전 실행됨
@@ -65,11 +67,17 @@
             Authorization: `Bearer ${this.accessToken}`,
           },
           () => {
-            this.stompClient.subscribe(`/topic/${this.roomId}`, (message) => {
-              const parseMessage = JSON.parse(message.body);
-              this.messages.push(parseMessage);
-              this.scrollToBottom();
-            });
+            this.stompClient.subscribe(
+              `/topic/${this.roomId}`,
+              (message) => {
+                const parseMessage = JSON.parse(message.body);
+                this.messages.push(parseMessage);
+                this.scrollToBottom();
+              },
+              {
+                Authorization: `Bearer ${this.accessToken}`,
+              },
+            );
           },
         );
       },
