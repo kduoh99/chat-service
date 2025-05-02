@@ -1,7 +1,6 @@
 package com.study.chatserver.chat.application;
 
-import java.util.List;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +30,7 @@ public class ChatService {
 	private final ReadStatusRepository readStatusRepository;
 	private final MemberRepository memberRepository;
 
+	@Transactional
 	public void saveMessage(Long roomId, MessageReqDto messageReqDto) {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
@@ -38,22 +38,33 @@ public class ChatService {
 		Member sender = memberRepository.findByEmail(messageReqDto.sender())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
-		ChatMessage chatMessage = ChatMessage.builder()
+		ChatMessage chatMessage = chatMessageRepository.save(ChatMessage.builder()
 			.chatRoom(chatRoom)
 			.member(sender)
 			.content(messageReqDto.message())
-			.build();
-		chatMessageRepository.save(chatMessage);
+			.build());
 
-		List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
-		for (ChatParticipant c : chatParticipants) {
-			ReadStatus readStatus = ReadStatus.builder()
-				.chatRoom(chatRoom)
-				.member(c.getMember())
-				.chatMessage(chatMessage)
-				.isRead(c.getMember().equals(sender))
-				.build();
-			readStatusRepository.save(readStatus);
-		}
+		chatParticipantRepository.findByChatRoom(chatRoom)
+			.forEach(c ->
+				readStatusRepository.save(ReadStatus.builder()
+					.chatRoom(chatRoom)
+					.member(c.getMember())
+					.chatMessage(chatMessage)
+					.isRead(c.getMember().equals(sender))
+					.build()));
+	}
+
+	@Transactional
+	public void createGroupRoom(String roomName) {
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		chatParticipantRepository.save(ChatParticipant.builder()
+			.chatRoom(chatRoomRepository.save(ChatRoom.builder()
+				.name(roomName)
+				.isGroupChat("Y")
+				.build()))
+			.member(member)
+			.build());
 	}
 }
