@@ -59,7 +59,7 @@ public class ChatService {
 	}
 
 	@Transactional
-	public void createGroupRoom(String roomName) {
+	public void createGroupChatRoom(String roomName) {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
@@ -72,14 +72,14 @@ public class ChatService {
 			.build());
 	}
 
-	public List<GroupRoomInfoResDto> getGroupRooms() {
+	public List<GroupRoomInfoResDto> getGroupChatRooms() {
 		return chatRoomRepository.findByIsGroupChat("Y").stream()
 			.map(c -> GroupRoomInfoResDto.of(c.getId(), c.getName()))
 			.toList();
 	}
 
 	@Transactional
-	public void joinGroupRoom(Long roomId) {
+	public void joinGroupChatRoom(Long roomId) {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
 

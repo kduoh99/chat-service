@@ -24,19 +24,19 @@ public class ChatController {
 	private final ChatService chatService;
 
 	@PostMapping("/group/room")
-	public ResponseEntity<Void> createGroupRoom(@RequestParam String roomName) {
-		chatService.createGroupRoom(roomName);
+	public ResponseEntity<Void> createGroupChatRoom(@RequestParam String roomName) {
+		chatService.createGroupChatRoom(roomName);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
 	@GetMapping("/group/room/list")
-	public ResponseEntity<List<GroupRoomInfoResDto>> getGroupRooms() {
-		return ResponseEntity.ok(chatService.getGroupRooms());
+	public ResponseEntity<List<GroupRoomInfoResDto>> getGroupChatRooms() {
+		return ResponseEntity.ok(chatService.getGroupChatRooms());
 	}
 
 	@PostMapping("/group/room/{roomId}/join")
-	public ResponseEntity<Void> joinGroupRoom(@PathVariable Long roomId) {
-		chatService.joinGroupRoom(roomId);
+	public ResponseEntity<Void> joinGroupChatRoom(@PathVariable Long roomId) {
+		chatService.joinGroupChatRoom(roomId);
 		return ResponseEntity.noContent().build();
 	}
 }
