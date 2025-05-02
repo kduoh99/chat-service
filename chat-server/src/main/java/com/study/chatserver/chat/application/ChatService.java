@@ -1,6 +1,7 @@
 package com.study.chatserver.chat.application;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -75,5 +76,24 @@ public class ChatService {
 		return chatRoomRepository.findByIsGroupChat("Y").stream()
 			.map(c -> GroupRoomInfoResDto.of(c.getId(), c.getName()))
 			.toList();
+	}
+
+	@Transactional
+	public void joinGroupRoom(Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
+
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+			.or(() -> Optional.of(registerParticipant(chatRoom, member)));
+	}
+
+	private ChatParticipant registerParticipant(ChatRoom chatRoom, Member member) {
+		return chatParticipantRepository.save(ChatParticipant.builder()
+			.chatRoom(chatRoom)
+			.member(member)
+			.build());
 	}
 }

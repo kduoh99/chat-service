@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,5 +32,11 @@ public class ChatController {
 	@GetMapping("/group/room/list")
 	public ResponseEntity<List<GroupRoomInfoResDto>> getGroupRooms() {
 		return ResponseEntity.ok(chatService.getGroupRooms());
+	}
+
+	@PostMapping("/group/room/{roomId}/join")
+	public ResponseEntity<Void> joinGroupRoom(@PathVariable Long roomId) {
+		chatService.joinGroupRoom(roomId);
+		return ResponseEntity.noContent().build();
 	}
 }
