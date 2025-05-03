@@ -86,6 +86,10 @@ public class ChatService {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
+		if (!"Y".equals(chatRoom.getIsGroupChat())) {
+			throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+		}
+
 		if (chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isEmpty()) {
 			registerParticipant(chatRoom, member);
 		}
@@ -168,5 +172,28 @@ public class ChatService {
 		if (chatParticipantRepository.findByChatRoom(chatRoom).isEmpty()) {
 			chatRoomRepository.delete(chatRoom);
 		}
+	}
+
+	@Transactional
+	public Long getOrCreatePrivateChatRoom(Long otherMemberId) {
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		Member otherMember = memberRepository.findById(otherMemberId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		return chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId())
+			.map(ChatRoom::getId)
+			.orElseGet(() -> {
+				ChatRoom privateRoom = chatRoomRepository.save(ChatRoom.builder()
+					.name(member.getName() + "-" + otherMember.getName())
+					.isGroupChat("N")
+					.build());
+
+				registerParticipant(privateRoom, member);
+				registerParticipant(privateRoom, otherMember);
+
+				return privateRoom.getId();
+			});
 	}
 }
