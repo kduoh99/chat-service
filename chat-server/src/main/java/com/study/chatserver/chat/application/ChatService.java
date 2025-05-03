@@ -86,7 +86,7 @@ public class ChatService {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
-		if (!"Y".equals(chatRoom.getIsGroupChat())) {
+		if ("N".equals(chatRoom.getIsGroupChat())) {
 			throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
 		}
 
@@ -157,7 +157,7 @@ public class ChatService {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
 
-		if (!"Y".equals(chatRoom.getIsGroupChat())) {
+		if ("N".equals(chatRoom.getIsGroupChat())) {
 			throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
 		}
 
