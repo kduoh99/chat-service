@@ -1,7 +1,6 @@
 package com.study.chatserver.chat.application;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -87,12 +86,13 @@ public class ChatService {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
-		chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
-			.or(() -> Optional.of(registerParticipant(chatRoom, member)));
+		if (chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isEmpty()) {
+			registerParticipant(chatRoom, member);
+		}
 	}
 
-	private ChatParticipant registerParticipant(ChatRoom chatRoom, Member member) {
-		return chatParticipantRepository.save(ChatParticipant.builder()
+	private void registerParticipant(ChatRoom chatRoom, Member member) {
+		chatParticipantRepository.save(ChatParticipant.builder()
 			.chatRoom(chatRoom)
 			.member(member)
 			.build());
@@ -146,5 +146,27 @@ public class ChatService {
 				return MyRoomInfoResDto.of(chatRoom.getId(), chatRoom.getName(), chatRoom.getIsGroupChat(), count);
 			})
 			.toList();
+	}
+
+	@Transactional
+	public void leaveGroupChatRoom(Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
+
+		if (!"Y".equals(chatRoom.getIsGroupChat())) {
+			throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+		}
+
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		ChatParticipant participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+			.orElseThrow(() -> new EntityNotFoundException("참여자를 찾을 수 없습니다."));
+
+		chatParticipantRepository.delete(participant);
+
+		if (chatParticipantRepository.findByChatRoom(chatRoom).isEmpty()) {
+			chatRoomRepository.delete(chatRoom);
+		}
 	}
 }
