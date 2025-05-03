@@ -43,11 +43,11 @@
     },
     async created() {
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/member/list`);
-      this.members = response.data;
+      const myEmail = localStorage.getItem('email');
+      this.members = response.data.filter((m) => m.email !== myEmail);
     },
     methods: {
       async startChat(otherMemberId) {
-        // 기존 채팅방이 존재하면 return받고, 없으면 새롭게 생성된 roomId return
         const response = await axios.post(
           `${process.env.VUE_APP_API_BASE_URL}/api/chat/private/room?otherMemberId=${otherMemberId}`,
         );
