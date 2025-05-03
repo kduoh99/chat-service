@@ -12,5 +12,6 @@ import com.study.chatserver.member.domain.Member;
 @Repository
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, Long> {
 
-	List<ReadStatus> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
+	List<ReadStatus> findByChatRoomAndMemberAndIsReadFalse(ChatRoom chatRoom, Member member);
+	Long countByChatRoomAndMemberAndIsReadFalse(ChatRoom chatRoom, Member member);
 }

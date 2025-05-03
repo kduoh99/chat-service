@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.study.chatserver.chat.api.dto.MessageDto;
 import com.study.chatserver.chat.api.dto.response.GroupRoomInfoResDto;
+import com.study.chatserver.chat.api.dto.response.MyRoomInfoResDto;
 import com.study.chatserver.chat.domain.ChatMessage;
 import com.study.chatserver.chat.domain.ChatParticipant;
 import com.study.chatserver.chat.domain.ChatRoom;
@@ -108,7 +109,7 @@ public class ChatService {
 			.orElseThrow(() -> new IllegalArgumentException("본인이 속하지 않은 채팅방입니다."));
 
 		return chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom).stream()
-			.map(m -> MessageDto.of(m.getContent(), m.getMember().getEmail()))
+			.map(c -> MessageDto.of(c.getContent(), c.getMember().getEmail()))
 			.toList();
 	}
 
@@ -130,8 +131,20 @@ public class ChatService {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
-		readStatusRepository.findByChatRoomAndMember(chatRoom, member).stream()
-			.filter(r -> !r.getIsRead())
+		readStatusRepository.findByChatRoomAndMemberAndIsReadFalse(chatRoom, member)
 			.forEach(r -> r.updateIsRead(true));
+	}
+
+	public List<MyRoomInfoResDto> getMyChatRooms() {
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		return chatParticipantRepository.findAllByMember(member).stream()
+			.map(c -> {
+				ChatRoom chatRoom = c.getChatRoom();
+				Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(chatRoom, member);
+				return MyRoomInfoResDto.of(chatRoom.getId(), chatRoom.getName(), chatRoom.getIsGroupChat(), count);
+			})
+			.toList();
 	}
 }

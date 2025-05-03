@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.study.chatserver.chat.api.dto.MessageDto;
 import com.study.chatserver.chat.api.dto.response.GroupRoomInfoResDto;
+import com.study.chatserver.chat.api.dto.response.MyRoomInfoResDto;
 import com.study.chatserver.chat.application.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ChatController {
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
-	@GetMapping("/group/room/list")
+	@GetMapping("/group/rooms")
 	public ResponseEntity<List<GroupRoomInfoResDto>> getGroupChatRooms() {
 		return ResponseEntity.ok(chatService.getGroupChatRooms());
 	}
@@ -50,5 +51,10 @@ public class ChatController {
 	public ResponseEntity<Void> readMessage(@PathVariable Long roomId) {
 		chatService.readMessage(roomId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/my/rooms")
+	public ResponseEntity<List<MyRoomInfoResDto>> getMyChatRooms() {
+		return ResponseEntity.ok(chatService.getMyChatRooms());
 	}
 }

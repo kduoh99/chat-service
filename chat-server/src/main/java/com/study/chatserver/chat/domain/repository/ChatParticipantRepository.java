@@ -13,6 +13,7 @@ import com.study.chatserver.member.domain.Member;
 @Repository
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
 
+	List<ChatParticipant> findAllByMember(Member member);
 	List<ChatParticipant> findByChatRoom(ChatRoom chatRoom);
 	Optional<ChatParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 }

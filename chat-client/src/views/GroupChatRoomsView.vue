@@ -72,7 +72,7 @@
         this.loadChatRoom();
       },
       async loadChatRoom() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/group/room/list`);
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/group/rooms`);
         this.chatRooms = response.data;
       },
     },
