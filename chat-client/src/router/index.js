@@ -5,6 +5,7 @@ import MembersView from '@/views/MembersView.vue';
 import WebSocketView from '@/views/WebSocketView.vue';
 import StompChatView from '@/views/StompChatView.vue';
 import GroupChatRoomsView from '@/views/GroupChatRoomsView.vue';
+import MyChatRoomsView from '@/views/MyChatRoomsView.vue';
 
 const routes = [
   {
@@ -28,14 +29,19 @@ const routes = [
     component: WebSocketView,
   },
   {
-    path: '/chatpage/:roomId',
+    path: '/chat/:roomId',
     name: 'StompChat',
     component: StompChatView,
   },
   {
-    path: '/groupchat-rooms',
+    path: '/group-chat-rooms',
     name: 'GroupChatRooms',
     component: GroupChatRoomsView,
+  },
+  {
+    path: '/my-chat-rooms',
+    name: 'MyChatRooms',
+    component: MyChatRoomsView,
   },
 ];
 

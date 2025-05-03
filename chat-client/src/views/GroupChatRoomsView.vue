@@ -64,7 +64,7 @@
     methods: {
       async joinChatRoom(roomId) {
         await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/group/room/${roomId}/join`);
-        this.$router.push(`/chatpage/${roomId}`);
+        this.$router.push(`/chat/${roomId}`);
       },
       async createChatRoom() {
         await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/group/room?roomName=${this.newRoomTitle}`, null);
