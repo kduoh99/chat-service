@@ -121,4 +121,17 @@ public class ChatService {
 
 		return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
 	}
+
+	@Transactional
+	public void readMessage(Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다."));
+
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+
+		readStatusRepository.findByChatRoomAndMember(chatRoom, member).stream()
+			.filter(r -> !r.getIsRead())
+			.forEach(r -> r.updateIsRead(true));
+	}
 }

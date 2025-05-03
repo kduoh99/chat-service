@@ -48,4 +48,8 @@ public class ReadStatus extends BaseEntity {
 		this.member = member;
 		this.chatMessage = chatMessage;
 	}
+
+	public void updateIsRead(boolean isRead) {
+		this.isRead = isRead;
+	}
 }
