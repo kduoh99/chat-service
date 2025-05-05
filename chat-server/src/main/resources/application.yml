@@ -8,6 +8,11 @@ spring:
     username: ${spring.datasource.username}
     password: ${spring.datasource.password}
 
+  data:
+    redis:
+      host: ${spring.redis.host}
+      port: ${spring.redis.port}
+
   jpa:
     hibernate:
       ddl-auto: update
