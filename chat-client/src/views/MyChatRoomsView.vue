@@ -35,16 +35,24 @@
 
 <script>
   import axios from 'axios';
+  import { EventSourcePolyfill } from 'event-source-polyfill';
 
   export default {
     data() {
       return {
         chats: [],
+        eventSource: null,
       };
     },
     async created() {
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/my/rooms`);
       this.chats = response.data;
+      this.connectSse();
+    },
+    beforeUnmount() {
+      if (this.eventSource && this.eventSource.readyState !== 2) {
+        this.eventSource.close();
+      }
     },
     methods: {
       enterChatRoom(roomId) {
@@ -53,6 +61,33 @@
       async leaveChatRoom(roomId) {
         await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/chat/group/room/${roomId}/leave`);
         this.chats = this.chats.filter((chat) => chat.roomId !== roomId);
+      },
+      connectSse() {
+        const accessToken = localStorage.getItem('accessToken');
+        const sseURL = `${process.env.VUE_APP_API_BASE_URL}/api/notification/subscribe`;
+
+        this.eventSource = new EventSourcePolyfill(sseURL, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        this.eventSource.addEventListener('connect', (event) => {
+          console.info('SSE 연결 성공:', event.data);
+        });
+
+        this.eventSource.addEventListener('unread-message', (event) => {
+          const updates = JSON.parse(event.data);
+          updates.forEach((update) => {
+            const chat = this.chats.find((c) => c.roomId === update.roomId);
+            if (chat) {
+              chat.unReadCount = update.count;
+            }
+          });
+        });
+
+        this.eventSource.onerror = (e) => {
+          console.error('SSE 연결 오류:', e);
+          this.eventSource.close();
+        };
       },
     },
   };

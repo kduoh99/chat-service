@@ -19,6 +19,8 @@ import com.study.chatserver.chat.domain.repository.ChatRoomRepository;
 import com.study.chatserver.chat.domain.repository.ReadStatusRepository;
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.repository.MemberRepository;
+import com.study.chatserver.notification.api.dto.response.UnreadCountResDto;
+import com.study.chatserver.notification.application.SseEmitterManager;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class ChatService {
 	private final ChatMessageRepository chatMessageRepository;
 	private final ReadStatusRepository readStatusRepository;
 	private final MemberRepository memberRepository;
+	private final SseEmitterManager emitterManager;
 
 	@Transactional
 	public void saveMessage(Long roomId, MessageDto messageDto) {
@@ -49,13 +52,22 @@ public class ChatService {
 			.build());
 
 		chatParticipantRepository.findByChatRoom(chatRoom)
-			.forEach(c ->
+			.forEach(c -> {
+				Member receiver = c.getMember();
+				boolean isSender = sender.equals(receiver);
+
 				readStatusRepository.save(ReadStatus.builder()
 					.chatRoom(chatRoom)
-					.member(c.getMember())
+					.member(receiver)
 					.chatMessage(chatMessage)
-					.isRead(c.getMember().equals(sender))
-					.build()));
+					.isRead(isSender)
+					.build());
+
+				if (!isSender) {
+					Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(chatRoom, receiver);
+					emitterManager.send(receiver.getId(), receiver.getEmail(), List.of(UnreadCountResDto.of(chatRoom.getId(), count)));
+				}
+			});
 	}
 
 	@Transactional
