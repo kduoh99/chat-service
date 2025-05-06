@@ -1,4 +1,4 @@
-package com.study.chatserver.notification.application;
+package com.study.chatserver.notification.application.pubsub;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.chatserver.notification.api.dto.response.UnreadCountResDto;
+import com.study.chatserver.notification.application.SseEmitterManager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,8 @@ public class NotificationSubscriber implements MessageListener {
 			String channel = new String(message.getChannel());
 			String emitterId = channel.split(":")[1];
 
-			String raw = new String(message.getBody());
-			List<UnreadCountResDto> counts = objectMapper.readValue(raw, new TypeReference<>() {});
+			String payload = new String(message.getBody());
+			List<UnreadCountResDto> counts = objectMapper.readValue(payload, new TypeReference<>() {});
 
 			emitterManager.send(emitterId, counts);
 		} catch (IOException | ArrayIndexOutOfBoundsException e) {

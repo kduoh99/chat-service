@@ -1,28 +1,24 @@
-package com.study.chatserver.chat.application;
+package com.study.chatserver.chat.application.pubsub;
 
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.chatserver.chat.api.dto.MessageDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Slf4j
+@Component
 @RequiredArgsConstructor
-public class RedisPubSubService implements MessageListener {
+public class ChatSubscriber implements MessageListener {
 
-	private final StringRedisTemplate stringRedisTemplate;
 	private final SimpMessageSendingOperations messageTemplate;
 	private final ObjectMapper objectMapper;
-
-	public void publish(String channel, String message) {
-		stringRedisTemplate.convertAndSend(channel, message);
-	}
 
 	@Override
 	public void onMessage(Message message, byte[] pattern) {
@@ -31,8 +27,9 @@ public class RedisPubSubService implements MessageListener {
 		try {
 			MessageDto messageDto = objectMapper.readValue(payload, MessageDto.class);
 			messageTemplate.convertAndSend("/topic/" + messageDto.roomId(), messageDto);
+			log.info("Redis Subscribe - roomId: {}, message delivered", messageDto.roomId());
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
+			log.error("Redis Subscribe Fail - error: {}", e.toString());
 		}
 	}
 }

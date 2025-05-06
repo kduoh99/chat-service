@@ -9,8 +9,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
-import com.study.chatserver.chat.application.RedisPubSubService;
-import com.study.chatserver.notification.application.NotificationSubscriber;
+import com.study.chatserver.chat.application.pubsub.ChatSubscriber;
+import com.study.chatserver.notification.application.pubsub.NotificationSubscriber;
 
 @Configuration
 public class RedisConfig {
@@ -35,12 +35,12 @@ public class RedisConfig {
 	// subscribe
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory redisConnectionFactory,
-		RedisPubSubService chatListener, NotificationSubscriber sseListener) {
+		ChatSubscriber chatSubscriber, NotificationSubscriber notificationSubscriber) {
 
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(redisConnectionFactory);
-		container.addMessageListener(chatListener, new PatternTopic("chat"));
-		container.addMessageListener(sseListener, new PatternTopic("sse:*"));
+		container.addMessageListener(chatSubscriber, new PatternTopic("chat"));
+		container.addMessageListener(notificationSubscriber, new PatternTopic("sse:*"));
 		return container;
 	}
 }

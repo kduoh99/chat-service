@@ -20,7 +20,7 @@ import com.study.chatserver.chat.domain.repository.ReadStatusRepository;
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.repository.MemberRepository;
 import com.study.chatserver.notification.api.dto.response.UnreadCountResDto;
-import com.study.chatserver.notification.application.NotificationPublisher;
+import com.study.chatserver.notification.application.pubsub.NotificationPublisher;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

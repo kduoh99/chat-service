@@ -1,4 +1,4 @@
-package com.study.chatserver.notification.application;
+package com.study.chatserver.notification.application.pubsub;
 
 import java.util.List;
 
