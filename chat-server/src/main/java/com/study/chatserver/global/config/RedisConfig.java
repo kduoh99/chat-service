@@ -8,9 +8,9 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
 import com.study.chatserver.chat.application.RedisPubSubService;
+import com.study.chatserver.notification.application.NotificationSubscriber;
 
 @Configuration
 public class RedisConfig {
@@ -35,17 +35,12 @@ public class RedisConfig {
 	// subscribe
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory redisConnectionFactory,
-		MessageListenerAdapter messageListenerAdapter) {
+		RedisPubSubService chatListener, NotificationSubscriber sseListener) {
 
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(redisConnectionFactory);
-		container.addMessageListener(messageListenerAdapter, new PatternTopic("chat"));
+		container.addMessageListener(chatListener, new PatternTopic("chat"));
+		container.addMessageListener(sseListener, new PatternTopic("sse:*"));
 		return container;
-	}
-
-	// 수신된 메시지 처리
-	@Bean
-	public MessageListenerAdapter messageListenerAdapter(RedisPubSubService redisPubSubService) {
-		return new MessageListenerAdapter(redisPubSubService, "onMessage");
 	}
 }

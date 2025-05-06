@@ -1,5 +1,6 @@
 package com.study.chatserver.notification.domain.repository;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Repository;
@@ -8,20 +9,20 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Repository
 public class EmitterRepositoryImpl implements EmitterRepository {
 
-	private final ConcurrentHashMap<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
 	@Override
-	public void save(Long memberId, SseEmitter emitter) {
-		emitters.put(memberId, emitter);
+	public void save(String emitterId, SseEmitter emitter) {
+		emitters.put(emitterId, emitter);
 	}
 
 	@Override
-	public SseEmitter get(Long memberId) {
-		return emitters.get(memberId);
+	public void deleteById(String emitterId) {
+		emitters.remove(emitterId);
 	}
 
 	@Override
-	public void delete(Long memberId) {
-		emitters.remove(memberId);
+	public SseEmitter findById(String emitterId) {
+		return emitters.get(emitterId);
 	}
 }

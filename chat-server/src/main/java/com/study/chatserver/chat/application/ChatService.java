@@ -20,7 +20,7 @@ import com.study.chatserver.chat.domain.repository.ReadStatusRepository;
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.repository.MemberRepository;
 import com.study.chatserver.notification.api.dto.response.UnreadCountResDto;
-import com.study.chatserver.notification.application.SseEmitterManager;
+import com.study.chatserver.notification.application.NotificationPublisher;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class ChatService {
 	private final ChatMessageRepository chatMessageRepository;
 	private final ReadStatusRepository readStatusRepository;
 	private final MemberRepository memberRepository;
-	private final SseEmitterManager emitterManager;
+	private final NotificationPublisher notificationPublisher;
 
 	@Transactional
 	public void saveMessage(Long roomId, MessageDto messageDto) {
@@ -51,22 +51,33 @@ public class ChatService {
 			.content(messageDto.message())
 			.build());
 
-		chatParticipantRepository.findByChatRoom(chatRoom)
-			.forEach(c -> {
-				Member receiver = c.getMember();
-				boolean isSender = sender.equals(receiver);
+		List<ChatParticipant> participants = chatParticipantRepository.findByChatRoom(chatRoom);
+		for (ChatParticipant c : participants) {
+			Member receiver = c.getMember();
+			boolean isSender = receiver.equals(sender);
 
-				readStatusRepository.save(ReadStatus.builder()
-					.chatRoom(chatRoom)
-					.member(receiver)
-					.chatMessage(chatMessage)
-					.isRead(isSender)
-					.build());
+			readStatusRepository.save(ReadStatus.builder()
+				.chatRoom(chatRoom)
+				.member(receiver)
+				.chatMessage(chatMessage)
+				.isRead(isSender)
+				.build());
+		}
 
-				if (!isSender) {
-					Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(chatRoom, receiver);
-					emitterManager.send(receiver.getId(), receiver.getEmail(), List.of(UnreadCountResDto.of(chatRoom.getId(), count)));
-				}
+		participants.stream()
+			.map(ChatParticipant::getMember)
+			.filter(receiver -> !receiver.equals(sender))
+			.forEach(receiver -> {
+				List<ChatParticipant> joined = chatParticipantRepository.findAllByMember(receiver);
+				List<UnreadCountResDto> counts = joined.stream()
+					.map(cp -> {
+						ChatRoom r = cp.getChatRoom();
+						Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(r, receiver);
+						return UnreadCountResDto.of(r.getId(), count);
+					})
+					.toList();
+
+				notificationPublisher.publish(String.valueOf(receiver.getId()), counts);
 			});
 	}
 

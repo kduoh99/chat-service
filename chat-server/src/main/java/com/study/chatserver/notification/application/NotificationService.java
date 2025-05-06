@@ -25,36 +25,35 @@ public class NotificationService {
 	private final MemberRepository memberRepository;
 
 	public SseEmitter subscribe() {
-		String email = SecurityContextHolder.getContext().getAuthentication().getName();
-		Member member = memberRepository.findByEmail(email)
+		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
 			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
 
-		Long memberId = member.getId();
+		String emitterId = String.valueOf(member.getId());
 		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
 		emitter.onCompletion(() -> {
-			emitterRepository.delete(memberId);
-			log.info("SSE Complete - to: {}", email);
+			emitterRepository.deleteById(emitterId);
+			log.info("SSE Complete - emitterId: {}", emitterId);
 		});
 
 		emitter.onTimeout(() -> {
-			emitterRepository.delete(memberId);
-			log.info("SSE Timeout - to: {}", email);
+			emitterRepository.deleteById(emitterId);
+			log.info("SSE Timeout - emitterId: {}", emitterId);
 		});
 
 		emitter.onError(e -> {
-			emitterRepository.delete(memberId);
-			log.warn("SSE Error - to: {}, error: {}", email, e.toString());
+			emitterRepository.deleteById(emitterId);
+			log.warn("SSE Error - emitterId: {}, error: {}", emitterId, e.toString());
 		});
 
-		emitterRepository.save(memberId, emitter);
+		emitterRepository.save(emitterId, emitter);
 
 		try {
 			emitter.send(SseEmitter.event().name("connect").data("connected"));
-			log.info("Subscribe - to: {}, connected", email);
+			log.info("SSE Subscribe - emitterId: {}, connected", emitterId);
 		} catch (IOException e) {
-			emitterRepository.delete(memberId);
-			log.warn("Subscribe Fail - to: {}, error: {}", email, e.toString());
+			emitterRepository.deleteById(emitterId);
+			log.warn("SSE Subscribe Fail - emitterId: {}, error: {}", emitterId, e.toString());
 		}
 
 		return emitter;
