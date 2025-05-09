@@ -15,7 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.study.chatserver.global.jwt.JwtFilter;
+import com.study.chatserver.global.auth.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +31,7 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(configurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
-			.authorizeHttpRequests(a -> a.requestMatchers("/api/member/save", "/api/member/login", "/connect/**")
+			.authorizeHttpRequests(a -> a.requestMatchers("/api/member/save", "/api/auth/**", "/connect/**")
 				.permitAll()
 				.anyRequest()
 				.authenticated())

@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.study.chatserver.member.api.dto.request.MemberLoginReqDto;
 import com.study.chatserver.member.api.dto.request.MemberSaveReqDto;
 import com.study.chatserver.member.api.dto.response.MemberInfoResDto;
-import com.study.chatserver.member.api.dto.response.MemberLoginResDto;
 import com.study.chatserver.member.application.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,11 +26,6 @@ public class MemberController {
 	@PostMapping("/save")
 	public ResponseEntity<Long> save(@RequestBody MemberSaveReqDto memberSaveReqDto) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(memberService.save(memberSaveReqDto));
-	}
-
-	@PostMapping("/login")
-	public ResponseEntity<MemberLoginResDto> login(@RequestBody MemberLoginReqDto memberLoginReqDto) {
-		return ResponseEntity.ok(memberService.login(memberLoginReqDto));
 	}
 
 	@GetMapping("/list")
