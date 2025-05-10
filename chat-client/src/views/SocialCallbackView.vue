@@ -4,6 +4,7 @@
 
 <script>
   import axios from 'axios';
+  import { jwtDecode } from 'jwt-decode';
 
   export default {
     created() {
@@ -17,7 +18,13 @@
           `${process.env.VUE_APP_API_BASE_URL}/api/auth/callback/${provider}?code=${code}`,
         );
         const accessToken = response.data.accessToken;
+        const decoded = jwtDecode(accessToken);
+        const email = decoded.sub;
+        const role = decoded.role;
+
         localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('email', email);
+        localStorage.setItem('role', role);
         window.location.href = '/';
       },
     },

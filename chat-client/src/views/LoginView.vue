@@ -61,8 +61,10 @@
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/auth/login`, data);
         console.log(response);
         const accessToken = response.data.accessToken;
-        const email = jwtDecode(accessToken).sub;
-        const role = jwtDecode(accessToken).role;
+        const decoded = jwtDecode(accessToken);
+        const email = decoded.sub;
+        const role = decoded.role;
+
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('email', email);
         localStorage.setItem('role', role);
