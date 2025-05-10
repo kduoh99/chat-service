@@ -31,14 +31,21 @@ public class Member extends BaseEntity {
 
 	private String password;
 
+	private String socialId;
+
+	@Enumerated(EnumType.STRING)
+	private SocialType socialType;
+
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
 	@Builder
-	private Member(String name, String email, String password, Role role) {
+	private Member(String name, String email, String password, String socialId, SocialType socialType, Role role) {
 		this.name = name;
 		this.email = email;
 		this.password = password;
+		this.socialId = socialId;
+		this.socialType = socialType;
 		this.role = role;
 	}
 }

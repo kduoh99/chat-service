@@ -1,6 +1,7 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import SignupView from '@/views/SignupView.vue';
 import LoginView from '@/views/LoginView.vue';
+import SocialCallbackView from '@/views/SocialCallbackView.vue';
 import MembersView from '@/views/MembersView.vue';
 import WebSocketView from '@/views/WebSocketView.vue';
 import StompChatView from '@/views/StompChatView.vue';
@@ -17,6 +18,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginView,
+  },
+  {
+    path: '/oauth/callback/:provider',
+    name: 'SocialCallback',
+    component: SocialCallbackView,
   },
   {
     path: '/members',
@@ -46,7 +52,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 

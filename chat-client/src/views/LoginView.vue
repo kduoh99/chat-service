@@ -10,6 +10,23 @@
               <v-text-field label="비밀번호" v-model="password" type="password" required></v-text-field>
               <v-btn type="submit" color="primary" block>로그인</v-btn>
             </v-form>
+            <br />
+            <v-row>
+              <v-col cols="6" class="d-flex justify-center">
+                <img
+                  src="@/assets/google_login.png"
+                  style="max-height: 40px; width: 100%; cursor: pointer"
+                  @click="googleLogin()"
+                />
+              </v-col>
+              <v-col cols="6" class="d-flex justify-center">
+                <img
+                  src="@/assets/kakao_login.png"
+                  style="max-height: 40px; width: 100%; cursor: pointer"
+                  @click="kakaoLogin()"
+                />
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -26,6 +43,13 @@
       return {
         email: '',
         password: '',
+        googleUrl: 'https://accounts.google.com/o/oauth2/auth',
+        googleClientId: process.env.VUE_APP_GOOGLE_CLIENT_ID,
+        googleRedirectUrl: process.env.VUE_APP_GOOGLE_REDIRECT_URL,
+        googleScope: 'openid email profile',
+        kakaoUrl: 'https://kauth.kakao.com/oauth/authorize',
+        kakaoClientId: process.env.VUE_APP_KAKAO_CLIENT_ID,
+        kakaoRedirectUrl: process.env.VUE_APP_KAKAO_REDIRECT_URL,
       };
     },
     methods: {
@@ -34,7 +58,7 @@
           email: this.email,
           password: this.password,
         };
-        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/member/login`, data);
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/auth/login`, data);
         console.log(response);
         const accessToken = response.data.accessToken;
         const email = jwtDecode(accessToken).sub;
@@ -43,6 +67,14 @@
         localStorage.setItem('email', email);
         localStorage.setItem('role', role);
         window.location.href = '/';
+      },
+      googleLogin() {
+        const auth_uri = `${this.googleUrl}?client_id=${this.googleClientId}&redirect_uri=${this.googleRedirectUrl}&response_type=code&scope=${this.googleScope}`;
+        window.location.href = auth_uri;
+      },
+      kakaoLogin() {
+        const auth_uri = `${this.kakaoUrl}?client_id=${this.kakaoClientId}&redirect_uri=${this.kakaoRedirectUrl}&response_type=code`;
+        window.location.href = auth_uri;
       },
     },
   };
