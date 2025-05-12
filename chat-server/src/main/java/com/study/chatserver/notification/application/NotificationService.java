@@ -9,9 +9,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.repository.MemberRepository;
+import com.study.chatserver.member.exception.MemberNotFoundException;
 import com.study.chatserver.notification.domain.repository.EmitterRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ public class NotificationService {
 
 	public SseEmitter subscribe() {
 		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+			.orElseThrow(MemberNotFoundException::new);
 
 		String emitterId = String.valueOf(member.getId());
 		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);

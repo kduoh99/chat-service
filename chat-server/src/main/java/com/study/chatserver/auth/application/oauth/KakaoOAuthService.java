@@ -52,7 +52,7 @@ public class KakaoOAuthService implements OAuthService {
 		try {
 			return objectMapper.readTree(response).path("access_token").asText();
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("OAuth 응답 파싱 실패 - access_token", e);
 		}
 	}
 
@@ -72,7 +72,7 @@ public class KakaoOAuthService implements OAuthService {
 				jsonNode.path("kakao_account").path("profile").path("nickname").asText()
 			};
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("OAuth 응답 파싱 실패 - 사용자 정보", e);
 		}
 	}
 }

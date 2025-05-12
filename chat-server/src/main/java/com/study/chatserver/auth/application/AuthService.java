@@ -9,14 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.study.chatserver.auth.api.dto.request.LoginReqDto;
 import com.study.chatserver.auth.api.dto.response.LoginResDto;
 import com.study.chatserver.auth.application.oauth.OAuthService;
+import com.study.chatserver.auth.exception.InvalidPasswordException;
+import com.study.chatserver.auth.exception.InvalidSocialProviderException;
 import com.study.chatserver.global.auth.TokenProvider;
 import com.study.chatserver.global.auth.dto.TokenDto;
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.Role;
 import com.study.chatserver.member.domain.SocialType;
 import com.study.chatserver.member.domain.repository.MemberRepository;
+import com.study.chatserver.member.exception.MemberNotFoundException;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,10 +33,10 @@ public class AuthService {
 
 	public LoginResDto login(LoginReqDto loginReqDto) {
 		Member member = memberRepository.findByEmail(loginReqDto.email())
-			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다."));
+			.orElseThrow(MemberNotFoundException::new);
 
 		if (!passwordEncoder.matches(loginReqDto.password(), member.getPassword())) {
-			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+			throw new InvalidPasswordException();
 		}
 
 		TokenDto tokenDto = tokenProvider.generateToken(member.getEmail(), String.valueOf(member.getRole()));
@@ -47,7 +49,7 @@ public class AuthService {
 		OAuthService service = oauthServices.stream()
 			.filter(s -> s.support() == provider)
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("지원하지 않는 소셜 로그인입니다."));
+			.orElseThrow(InvalidSocialProviderException::new);
 
 		String accessToken = service.getAccessToken(code);
 		String[] memberInfo = service.getMemberInfo(accessToken);

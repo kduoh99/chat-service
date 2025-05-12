@@ -11,6 +11,7 @@ import com.study.chatserver.member.api.dto.response.MemberInfoResDto;
 import com.study.chatserver.member.domain.Member;
 import com.study.chatserver.member.domain.Role;
 import com.study.chatserver.member.domain.repository.MemberRepository;
+import com.study.chatserver.member.exception.ExistsEmailException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,7 @@ public class MemberService {
 	@Transactional
 	public Long save(MemberSaveReqDto memberSaveReqDto) {
 		if (memberRepository.findByEmail(memberSaveReqDto.email()).isPresent()) {
-			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+			throw new ExistsEmailException();
 		}
 
 		Member member = memberRepository.save(Member.builder()
