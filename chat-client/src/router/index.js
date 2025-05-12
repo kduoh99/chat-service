@@ -7,6 +7,7 @@ import WebSocketView from '@/views/WebSocketView.vue';
 import StompChatView from '@/views/StompChatView.vue';
 import GroupChatRoomsView from '@/views/GroupChatRoomsView.vue';
 import MyChatRoomsView from '@/views/MyChatRoomsView.vue';
+import UnauthorizedView from '@/views/UnauthorizedView.vue';
 
 const routes = [
   {
@@ -28,32 +29,51 @@ const routes = [
     path: '/members',
     name: 'Members',
     component: MembersView,
+    meta: { requiresAuth: true },
   },
   {
     path: '/websocket',
     name: 'WebSocket',
     component: WebSocketView,
+    meta: { requiresAuth: true },
   },
   {
     path: '/chat/:roomId',
     name: 'StompChat',
     component: StompChatView,
+    meta: { requiresAuth: true },
   },
   {
     path: '/group-chat-rooms',
     name: 'GroupChatRooms',
     component: GroupChatRoomsView,
+    meta: { requiresAuth: true },
   },
   {
     path: '/my-chat-rooms',
     name: 'MyChatRooms',
     component: MyChatRoomsView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/unauthorized',
+    name: 'Unauthorized',
+    component: UnauthorizedView,
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (to.meta.requiresAuth && !accessToken) {
+    next({ name: 'Unauthorized' });
+  } else {
+    next();
+  }
 });
 
 export default router;
