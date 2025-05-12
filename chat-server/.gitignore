@@ -38,3 +38,7 @@ out/
 
 application-local.yml
 application-prod.yml
+
+logs/
+*.log.gz
+hs_err_pid*.log
