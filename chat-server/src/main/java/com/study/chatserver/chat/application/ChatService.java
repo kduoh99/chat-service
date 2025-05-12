@@ -1,6 +1,7 @@
 package com.study.chatserver.chat.application;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -41,20 +42,124 @@ public class ChatService {
 	private final MemberRepository memberRepository;
 	private final NotificationPublisher notificationPublisher;
 
+	// 메시지 저장 -> 읽음 처리 -> 알림 전송
 	@Transactional
 	public void saveMessage(Long roomId, MessageDto messageDto) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+		ChatRoom chatRoom = getChatRoom(roomId);
+		Member sender = getMemberByEmail(messageDto.sender());
+		ChatMessage chatMessage = saveChatMessage(chatRoom, sender, messageDto.message());
+		saveReadStatuses(chatRoom, chatMessage, sender);
+		publishUnreadCounts(chatRoom, sender);
+	}
+
+	// 그룹 채팅방 생성 -> 사용자 참여 등록
+	@Transactional
+	public void createGroupChatRoom(String roomName) {
+		Member member = getCurrentMember();
+		ChatRoom chatRoom = createGroupRoom(roomName);
+		registerParticipant(chatRoom, member);
+	}
+
+	// 내 채팅방 목록 조회
+	public List<MyRoomInfoResDto> getMyChatRooms() {
+		Member member = getCurrentMember();
+		List<ChatParticipant> participants = getMyParticipants(member);
+		return convertToMyRoomInfoList(participants, member);
+	}
+
+	// 그룹 채팅방 목록 조회
+	public List<GroupRoomInfoResDto> getGroupChatRooms() {
+		return chatRoomRepository.findByIsGroupChat("Y").stream()
+			.map(c -> GroupRoomInfoResDto.of(c.getId(), c.getName()))
+			.toList();
+	}
+
+	// 그룹 채팅방 참여
+	@Transactional
+	public void joinGroupChatRoom(Long roomId) {
+		ChatRoom chatRoom = getChatRoom(roomId);
+		validateGroupChatRoom(chatRoom);
+
+		Member member = getCurrentMember();
+
+		if (!isParticipant(chatRoom, member)) {
+			registerParticipant(chatRoom, member);
+		}
+	}
+
+	// 채팅방 메시지 목록 조회
+	public List<MessageDto> getChatHistory(Long roomId) {
+		ChatRoom chatRoom = getChatRoom(roomId);
+		Member member = getCurrentMember();
+		validateRoomParticipant(chatRoom, member);
+
+		return chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom).stream()
+			.map(c -> MessageDto.of(c.getContent(), c.getMember().getEmail()))
+			.toList();
+	}
+
+	// 채팅방 참여자 여부 확인
+	public boolean isRoomParticipant(String email, Long roomId) {
+		ChatRoom chatRoom = getChatRoom(roomId);
+		Member member = getMemberByEmail(email);
+		return isParticipant(chatRoom, member);
+	}
+
+	// 메시지 읽음 처리
+	@Transactional
+	public void readMessage(Long roomId) {
+		ChatRoom chatRoom = getChatRoom(roomId);
+		Member member = getCurrentMember();
+		markMessagesAsRead(chatRoom, member);
+	}
+
+	// 그룹 채팅방 나가기 -> 참여자 삭제 -> 참여자 없으면 방 삭제
+	@Transactional
+	public void leaveGroupChatRoom(Long roomId) {
+		ChatRoom chatRoom = getChatRoom(roomId);
+		validateGroupChatRoom(chatRoom);
+
+		Member member = getCurrentMember();
+		ChatParticipant participant = getParticipant(chatRoom, member);
+
+		removeParticipant(participant);
+		deleteRoomIfEmpty(chatRoom);
+	}
+
+	// 1:1 채팅방 조회 또는 생성 후 ID 반환
+	@Transactional
+	public Long getOrCreatePrivateChatRoom(Long otherMemberId) {
+		Member member = getCurrentMember();
+		Member otherMember = getMemberById(otherMemberId);
+
+		return findExistingPrivateRoom(member, otherMember)
+			.map(ChatRoom::getId)
+			.orElseGet(() -> createPrivateRoom(member, otherMember).getId());
+	}
+
+	// 채팅방 조회
+	private ChatRoom getChatRoom(Long roomId) {
+		return chatRoomRepository.findById(roomId)
 			.orElseThrow(ChatRoomNotFoundException::new);
+	}
 
-		Member sender = memberRepository.findByEmail(messageDto.sender())
+	// 이메일로 사용자 조회
+	private Member getMemberByEmail(String email) {
+		return memberRepository.findByEmail(email)
 			.orElseThrow(MemberNotFoundException::new);
+	}
 
-		ChatMessage chatMessage = chatMessageRepository.save(ChatMessage.builder()
-			.chatRoom(chatRoom)
+	// 채팅 메시지 저장
+	private ChatMessage saveChatMessage(ChatRoom room, Member sender, String content) {
+		return chatMessageRepository.save(ChatMessage.builder()
+			.chatRoom(room)
 			.member(sender)
-			.content(messageDto.message())
+			.content(content)
 			.build());
+	}
 
+	// 참여자별 읽음 상태 저장
+	private void saveReadStatuses(ChatRoom chatRoom, ChatMessage chatMessage, Member sender) {
 		List<ChatParticipant> participants = chatParticipantRepository.findByChatRoom(chatRoom);
 		for (ChatParticipant c : participants) {
 			Member receiver = c.getMember();
@@ -67,6 +172,11 @@ public class ChatService {
 				.isRead(isSender)
 				.build());
 		}
+	}
+
+	// 채팅방별 읽지 않은 메시지 수 알림 전송
+	private void publishUnreadCounts(ChatRoom chatRoom, Member sender) {
+		List<ChatParticipant> participants = chatParticipantRepository.findByChatRoom(chatRoom);
 
 		participants.stream()
 			.map(ChatParticipant::getMember)
@@ -85,43 +195,21 @@ public class ChatService {
 			});
 	}
 
-	@Transactional
-	public void createGroupChatRoom(String roomName) {
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
+	// 현재 로그인한 사용자 조회
+	private Member getCurrentMember() {
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+		return getMemberByEmail(email);
+	}
 
-		chatParticipantRepository.save(ChatParticipant.builder()
-			.chatRoom(chatRoomRepository.save(ChatRoom.builder()
-				.name(roomName)
-				.isGroupChat("Y")
-				.build()))
-			.member(member)
+	// 그룹 채팅방 생성
+	private ChatRoom createGroupRoom(String name) {
+		return chatRoomRepository.save(ChatRoom.builder()
+			.name(name)
+			.isGroupChat("Y")
 			.build());
 	}
 
-	public List<GroupRoomInfoResDto> getGroupChatRooms() {
-		return chatRoomRepository.findByIsGroupChat("Y").stream()
-			.map(c -> GroupRoomInfoResDto.of(c.getId(), c.getName()))
-			.toList();
-	}
-
-	@Transactional
-	public void joinGroupChatRoom(Long roomId) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(ChatRoomNotFoundException::new);
-
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
-
-		if ("N".equals(chatRoom.getIsGroupChat())) {
-			throw new InvalidChatRoomTypeException();
-		}
-
-		if (chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isEmpty()) {
-			registerParticipant(chatRoom, member);
-		}
-	}
-
+	// 채팅방에 참여자 등록
 	private void registerParticipant(ChatRoom chatRoom, Member member) {
 		chatParticipantRepository.save(ChatParticipant.builder()
 			.chatRoom(chatRoom)
@@ -129,48 +217,38 @@ public class ChatService {
 			.build());
 	}
 
-	public List<MessageDto> getChatHistory(Long roomId) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(ChatRoomNotFoundException::new);
-
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
-
-		chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
-			.orElseThrow(ChatRoomAccessDeniedException::new);
-
-		return chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom).stream()
-			.map(c -> MessageDto.of(c.getContent(), c.getMember().getEmail()))
-			.toList();
+	// 그룹 채팅방인지 검증
+	private void validateGroupChatRoom(ChatRoom chatRoom) {
+		if ("N".equals(chatRoom.getIsGroupChat())) {
+			throw new InvalidChatRoomTypeException();
+		}
 	}
 
-	public boolean isRoomParticipant(String email, Long roomId) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(ChatRoomNotFoundException::new);
-
-		Member member = memberRepository.findByEmail(email)
-			.orElseThrow(MemberNotFoundException::new);
-
+	// 채팅방 참여 여부 확인
+	private boolean isParticipant(ChatRoom chatRoom, Member member) {
 		return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
 	}
 
-	@Transactional
-	public void readMessage(Long roomId) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(ChatRoomNotFoundException::new);
+	// 채팅방 참여자인지 검증
+	private void validateRoomParticipant(ChatRoom chatRoom, Member member) {
+		chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+			.orElseThrow(ChatRoomAccessDeniedException::new);
+	}
 
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
-
+	// 읽지 않은 메시지를 모두 읽음 처리
+	private void markMessagesAsRead(ChatRoom chatRoom, Member member) {
 		readStatusRepository.findByChatRoomAndMemberAndIsReadFalse(chatRoom, member)
 			.forEach(r -> r.updateIsRead(true));
 	}
 
-	public List<MyRoomInfoResDto> getMyChatRooms() {
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
+	// 사용자가 참여 중인 채팅방 목록 조회
+	private List<ChatParticipant> getMyParticipants(Member member) {
+		return chatParticipantRepository.findAllByMember(member);
+	}
 
-		return chatParticipantRepository.findAllByMember(member).stream()
+	// 채팅방 목록을 응답 DTO 리스트로 변환
+	private List<MyRoomInfoResDto> convertToMyRoomInfoList(List<ChatParticipant> participants, Member member) {
+		return participants.stream()
 			.map(c -> {
 				ChatRoom chatRoom = c.getChatRoom();
 				Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(chatRoom, member);
@@ -179,48 +257,44 @@ public class ChatService {
 			.toList();
 	}
 
-	@Transactional
-	public void leaveGroupChatRoom(Long roomId) {
-		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(ChatRoomNotFoundException::new);
-
-		if ("N".equals(chatRoom.getIsGroupChat())) {
-			throw new InvalidChatRoomTypeException();
-		}
-
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-			.orElseThrow(MemberNotFoundException::new);
-
-		ChatParticipant participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+	// 채팅방 참여자 조회
+	private ChatParticipant getParticipant(ChatRoom chatRoom, Member member) {
+		return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
 			.orElseThrow(ChatParticipantNotFoundException::new);
+	}
 
+	// 채팅방에서 참여자 삭제
+	private void removeParticipant(ChatParticipant participant) {
 		chatParticipantRepository.delete(participant);
+	}
 
+	// 참여자가 없는 채팅방 삭제
+	private void deleteRoomIfEmpty(ChatRoom chatRoom) {
 		if (chatParticipantRepository.findByChatRoom(chatRoom).isEmpty()) {
 			chatRoomRepository.delete(chatRoom);
 		}
 	}
 
-	@Transactional
-	public Long getOrCreatePrivateChatRoom(Long otherMemberId) {
-		Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+	// ID로 사용자 조회
+	private Member getMemberById(Long id) {
+		return memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
+	}
 
-		Member otherMember = memberRepository.findById(otherMemberId)
-			.orElseThrow(MemberNotFoundException::new);
+	// 기존 1:1 채팅방 존재 여부 확인
+	private Optional<ChatRoom> findExistingPrivateRoom(Member member, Member otherMember) {
+		return chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
+	}
 
-		return chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId())
-			.map(ChatRoom::getId)
-			.orElseGet(() -> {
-				ChatRoom privateRoom = chatRoomRepository.save(ChatRoom.builder()
-					.name(member.getName() + "-" + otherMember.getName())
-					.isGroupChat("N")
-					.build());
+	// 1:1 채팅방 생성 및 참여자 등록
+	private ChatRoom createPrivateRoom(Member member, Member otherMember) {
+		ChatRoom privateRoom = chatRoomRepository.save(ChatRoom.builder()
+			.name(member.getName() + "-" + otherMember.getName())
+			.isGroupChat("N")
+			.build());
 
-				registerParticipant(privateRoom, member);
-				registerParticipant(privateRoom, otherMember);
-
-				return privateRoom.getId();
-			});
+		registerParticipant(privateRoom, member);
+		registerParticipant(privateRoom, otherMember);
+		return privateRoom;
 	}
 }
