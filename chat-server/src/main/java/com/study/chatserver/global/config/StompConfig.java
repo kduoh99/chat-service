@@ -21,7 +21,7 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/connect")
-			.setAllowedOrigins("http://localhost:3000")
+			.setAllowedOrigins("https://chat-service-liard.vercel.app")
 			.withSockJS();	// SockJS 라이브러리를 통해 HTTP 프로토콜에서도 WebSocket 연결 가능
 	}
 
