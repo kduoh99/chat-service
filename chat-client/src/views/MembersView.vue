@@ -1,10 +1,10 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
+  <v-container class="mt-5">
+    <v-row justify="center" align="start">
+      <v-col cols="12" sm="10" md="8" lg="6">
         <v-card>
           <v-card-title class="text-h5 text-center">회원목록</v-card-title>
-          <v-card-text>
+          <v-card-text class="px-4 py-0" style="overflow-x: auto">
             <v-table>
               <thead>
                 <tr>
@@ -20,7 +20,7 @@
                   <td>{{ member.name }}</td>
                   <td>{{ member.email }}</td>
                   <td>
-                    <v-btn color="primary" @click="startChat(member.memberId)">채팅하기</v-btn>
+                    <v-btn color="primary" class="my-2" @click="startChat(member.memberId)"> 채팅하기 </v-btn>
                   </td>
                 </tr>
               </tbody>

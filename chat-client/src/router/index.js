@@ -8,6 +8,7 @@ import StompChatView from '@/views/StompChatView.vue';
 import GroupChatRoomsView from '@/views/GroupChatRoomsView.vue';
 import MyChatRoomsView from '@/views/MyChatRoomsView.vue';
 import UnauthorizedView from '@/views/UnauthorizedView.vue';
+import HomeView from '@/views/HomeView.vue';
 
 const routes = [
   {
@@ -59,6 +60,11 @@ const routes = [
     path: '/unauthorized',
     name: 'Unauthorized',
     component: UnauthorizedView,
+  },
+  {
+    path: '/',
+    name: 'Home',
+    component: HomeView,
   },
 ];
 

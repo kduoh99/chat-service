@@ -1,10 +1,10 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
+  <v-container class="mt-5">
+    <v-row justify="center" align="start">
+      <v-col cols="12" sm="10" md="8" lg="6">
         <v-card>
           <v-card-title class="text-h5 text-center">내 채팅 목록</v-card-title>
-          <v-card-text>
+          <v-card-text class="px-4 py-0" style="overflow-x: auto">
             <v-table>
               <thead>
                 <tr>
@@ -18,10 +18,15 @@
                   <td>{{ chat.roomName }}</td>
                   <td>{{ chat.unReadCount }}</td>
                   <td>
-                    <v-btn color="primary" @click="enterChatRoom(chat.roomId)">입장</v-btn>
-                    <v-btn color="secondary" :disabled="chat.isGroupChat === 'N'" @click="leaveChatRoom(chat.roomId)"
-                      >나가기</v-btn
+                    <v-btn color="primary" class="my-2 mr-1" @click="enterChatRoom(chat.roomId)">입장</v-btn>
+                    <v-btn
+                      color="secondary"
+                      class="my-2"
+                      :disabled="chat.isGroupChat === 'N'"
+                      @click="leaveChatRoom(chat.roomId)"
                     >
+                      나가기
+                    </v-btn>
                   </td>
                 </tr>
               </tbody>

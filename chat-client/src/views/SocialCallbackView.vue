@@ -1,5 +1,11 @@
 <template>
-  <div>{{ provider }} 로그인 진행중...</div>
+  <v-container class="mt-8">
+    <v-row justify="center">
+      <v-col cols="12" class="text-center">
+        <div class="text-h6 font-weight-medium">{{ provider.toUpperCase() }} 로그인 진행중...</div>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

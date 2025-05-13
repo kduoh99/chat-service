@@ -1,7 +1,7 @@
 <template>
-  <v-container>
-    <v-row justify="center">
-      <v-col cols="12" md="8">
+  <v-container class="mt-5">
+    <v-row justify="center" align="start">
+      <v-col cols="12" sm="10" md="8" lg="6">
         <v-card>
           <v-card-title class="text-h5 text-center">채팅</v-card-title>
           <v-card-text>
@@ -9,12 +9,12 @@
               <div
                 v-for="(msg, index) in messages"
                 :key="index"
-                :class="['chat-message', msg.sender === this.sender ? 'sent' : 'received']"
+                :class="['chat-message', msg.sender === sender ? 'sent' : 'received']"
               >
-                <strong>{{ msg.sender }}: </strong>{{ msg.message }}
+                <strong>{{ msg.sender }}:</strong> {{ msg.message }}
               </div>
             </div>
-            <v-text-field v-model="newMessage" label="메시지 입력" @keyup.enter="send" />
+            <v-text-field v-model="newMessage" label="메시지 입력" @keyup.enter="send" outlined class="mb-3" />
             <v-btn color="primary" block @click="send">전송</v-btn>
           </v-card-text>
         </v-card>
@@ -39,7 +39,6 @@
         roomId: null,
       };
     },
-    // 컴포넌트가 생성될 때 실행됨
     async created() {
       this.sender = localStorage.getItem('email');
       this.roomId = this.$route.params.roomId;
@@ -47,12 +46,10 @@
       this.messages = response.data;
       this.connect();
     },
-    // 라우트 이동 직전 실행됨
     beforeRouteLeave(to, from, next) {
       this.disconnect();
       next();
     },
-    // 컴포넌트가 제거되기 직전 실행됨
     beforeUnmount() {
       this.disconnect();
     },
@@ -112,18 +109,23 @@
     height: 300px;
     overflow-y: auto;
     border: 1px solid #ddd;
-    margin-bottom: 10px;
+    padding: 10px;
+    margin-bottom: 16px;
+    background-color: #f9f9f9;
   }
 
   .chat-message {
     margin-bottom: 10px;
+    word-break: break-word;
   }
 
   .sent {
     text-align: right;
+    color: #1e88e5;
   }
 
   .received {
     text-align: left;
+    color: #333;
   }
 </style>
