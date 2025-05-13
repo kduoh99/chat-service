@@ -42,8 +42,11 @@
     async created() {
       this.sender = localStorage.getItem('email');
       this.roomId = this.$route.params.roomId;
+
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${this.roomId}`);
       this.messages = response.data;
+
+      this.$nextTick(() => this.scrollToBottom());
       this.connect();
     },
     beforeRouteLeave(to, from, next) {
@@ -90,7 +93,9 @@
       scrollToBottom() {
         this.$nextTick(() => {
           const chatBox = this.$el.querySelector('.chat-box');
-          chatBox.scrollTop = chatBox.scrollHeight;
+          if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+          }
         });
       },
       async disconnect() {
