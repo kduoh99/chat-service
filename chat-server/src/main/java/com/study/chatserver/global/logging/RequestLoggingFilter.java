@@ -1,6 +1,7 @@
 package com.study.chatserver.global.logging;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -30,6 +31,9 @@ public class RequestLoggingFilter implements Filter {
 
 			String email = SecurityContextHolder.getContext().getAuthentication().getName();
 			MDC.put("userEmail", email);
+
+			String hostname = InetAddress.getLocalHost().getHostName();
+			MDC.put("hostname", hostname);
 
 			chain.doFilter(request, response);
 		} finally {
