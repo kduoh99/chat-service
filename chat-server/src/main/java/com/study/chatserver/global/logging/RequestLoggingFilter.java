@@ -26,12 +26,8 @@ public class RequestLoggingFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest)request;
 
 			MDC.put("path", httpRequest.getRequestURI());
-
-			String email = SecurityContextHolder.getContext().getAuthentication().getName();
-			MDC.put("userEmail", email);
-
-			String hostname = InetAddress.getLocalHost().getHostName();
-			MDC.put("hostname", hostname);
+			MDC.put("userEmail", SecurityContextHolder.getContext().getAuthentication().getName());
+			MDC.put("hostname", InetAddress.getLocalHost().getHostName());
 
 			chain.doFilter(request, response);
 		} finally {

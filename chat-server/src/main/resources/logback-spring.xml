@@ -3,6 +3,10 @@
     <!-- 로그 파일 기본 경로 -->
     <property name="LOG_FILE" value="logs/application.log"/>
 
+    <!-- Spring 환경변수 참조 -->
+    <springProperty scope="context" name="LOGSTASH_HOST" source="logging.logstash.host"/>
+    <springProperty scope="context" name="LOGSTASH_PORT" source="logging.logstash.port"/>
+
     <!-- 콘솔 로그 출력 (공통) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -27,7 +31,7 @@
 
         <!-- Logstash 전송 -->
         <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-            <destination>13.209.238.105:5044</destination>
+            <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
         </appender>
 
