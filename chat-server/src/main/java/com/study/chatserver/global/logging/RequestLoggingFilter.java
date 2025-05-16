@@ -25,9 +25,15 @@ public class RequestLoggingFilter implements Filter {
 		try {
 			HttpServletRequest httpRequest = (HttpServletRequest)request;
 
-			MDC.put("path", httpRequest.getRequestURI());
-			MDC.put("userEmail", SecurityContextHolder.getContext().getAuthentication().getName());
-			MDC.put("hostname", InetAddress.getLocalHost().getHostName());
+			String path = httpRequest.getRequestURI();
+			String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+			String hostname = InetAddress.getLocalHost().getHostName();
+
+			MDC.put("path", path);
+			MDC.put("userEmail", userEmail);
+			MDC.put("hostname", hostname);
+
+			log.info("Request - path={}, user={}, host={}", path, userEmail, hostname);
 
 			chain.doFilter(request, response);
 		} finally {
