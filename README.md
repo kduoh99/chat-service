@@ -9,7 +9,7 @@ WebSocket/STOMP 기반으로 1:1 및 그룹 채팅 기능을 구현하고, Redis
 읽지 않은 메시지 수는 SSE(Server-Sent Events)를 통해 실시간으로 반영됩니다.  
 로그는 Logback → Logstash → Elasticsearch로 수집되며, Kibana에서 시각화되고 Slack Webhook을 통해 오류 알림이 전송됩니다.  
 부하 테스트는 k6를 활용하여 수행하고, k6 Overview와 CloudWatch를 통해 응답 지표·시스템 자원을 모니터링합니다.  
-테스트 결과를 기반으로 병목 지점을 진단하고, 스케일 업·스케일 아웃 전략을 적용하여 비교한 뒤 성능을 개선했습니다.
+테스트 결과를 기반으로 병목 지점을 진단하고, 스케일 업·스케일 아웃 전략을 적용하여 효율성을 비교합니다.
 
 ## 🎬 Demo
 
