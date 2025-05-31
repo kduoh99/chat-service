@@ -5,7 +5,7 @@
 
 ## 📌 Overview
 
-WebSocket/STOMP 기반으로 1:1 및 그룹 채팅 기능을 구현하고, Redis Pub/Sub을 적용하여 다중 서버 간 메시지를 안정적으로 브로드캐스트합니다.  
+WebSocket/STOMP 기반으로 1:1 및 그룹 채팅 기능을 구현하고, Redis Pub/Sub을 적용하여 다중 서버 간 메시지가 브로드캐스트되도록 구성했습니다.  
 읽지 않은 메시지 수는 SSE(Server-Sent Events)를 통해 실시간으로 반영됩니다.  
 로그는 Logback → Logstash → Elasticsearch로 수집되며, Kibana에서 시각화되고 Slack Webhook을 통해 오류 알림이 전송됩니다.  
 부하 테스트는 k6를 활용하여 수행하고, k6 Overview와 CloudWatch를 통해 응답 지표·시스템 자원을 모니터링합니다.  
