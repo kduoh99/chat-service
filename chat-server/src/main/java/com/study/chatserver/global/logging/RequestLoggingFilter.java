@@ -2,6 +2,7 @@ package com.study.chatserver.global.logging;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.UUID;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -25,15 +26,17 @@ public class RequestLoggingFilter implements Filter {
 		try {
 			HttpServletRequest httpRequest = (HttpServletRequest)request;
 
+			String requestId = UUID.randomUUID().toString();
 			String path = httpRequest.getRequestURI();
 			String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 			String hostname = InetAddress.getLocalHost().getHostName();
 
+			MDC.put("request_id", requestId);
 			MDC.put("path", path);
 			MDC.put("userEmail", userEmail);
 			MDC.put("hostname", hostname);
 
-			log.info("Request - path={}, user={}, host={}", path, userEmail, hostname);
+			log.info("Request - id={}, path={}, user={}, host={}", requestId, path, userEmail, hostname);
 
 			chain.doFilter(request, response);
 		} finally {
