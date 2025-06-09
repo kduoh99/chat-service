@@ -33,10 +33,10 @@ public class RequestLoggingFilter implements Filter {
 
 			MDC.put("request_id", requestId);
 			MDC.put("path", path);
-			MDC.put("userEmail", userEmail);
+			MDC.put("user_email", userEmail);
 			MDC.put("hostname", hostname);
 
-			log.info("Request - id={}, path={}, user={}, host={}", requestId, path, userEmail, hostname);
+			log.info("Request - path={}, user={}, host={}", path, userEmail, hostname);
 
 			chain.doFilter(request, response);
 		} finally {
