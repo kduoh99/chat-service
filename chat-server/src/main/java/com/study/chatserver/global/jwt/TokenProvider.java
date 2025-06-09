@@ -1,4 +1,4 @@
-package com.study.chatserver.global.auth;
+package com.study.chatserver.global.jwt;
 
 import java.security.Key;
 import java.util.Date;
@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.study.chatserver.global.auth.dto.TokenDto;
+import com.study.chatserver.global.jwt.dto.TokenDto;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

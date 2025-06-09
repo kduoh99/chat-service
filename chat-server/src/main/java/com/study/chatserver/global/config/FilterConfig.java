@@ -4,7 +4,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.study.chatserver.global.logging.RequestLoggingFilter;
+import com.study.chatserver.global.filter.RequestLoggingFilter;
 
 @Configuration
 public class FilterConfig {

@@ -1,4 +1,4 @@
-package com.study.chatserver.global.logging;
+package com.study.chatserver.global.filter;
 
 import java.io.IOException;
 import java.net.InetAddress;

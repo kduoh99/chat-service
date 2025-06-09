@@ -1,4 +1,4 @@
-package com.study.chatserver.global.auth.dto;
+package com.study.chatserver.global.jwt.dto;
 
 import lombok.Builder;
 

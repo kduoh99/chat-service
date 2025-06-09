@@ -1,4 +1,4 @@
-package com.study.chatserver.global.auth;
+package com.study.chatserver.global.jwt;
 
 import java.io.IOException;
 
