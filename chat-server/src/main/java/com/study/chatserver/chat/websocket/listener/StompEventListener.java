@@ -1,4 +1,4 @@
-package com.study.chatserver.global.websocket.listener;
+package com.study.chatserver.chat.websocket.listener;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

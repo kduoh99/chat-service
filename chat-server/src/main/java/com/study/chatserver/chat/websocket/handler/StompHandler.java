@@ -1,4 +1,4 @@
-package com.study.chatserver.global.websocket.handler;
+package com.study.chatserver.chat.websocket.handler;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;

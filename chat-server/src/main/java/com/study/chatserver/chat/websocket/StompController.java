@@ -1,4 +1,4 @@
-package com.study.chatserver.chat.api;
+package com.study.chatserver.chat.websocket;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
